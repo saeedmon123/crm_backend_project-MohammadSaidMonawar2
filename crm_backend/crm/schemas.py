@@ -2,7 +2,7 @@
 from ninja import Schema
 from typing import List, Optional
 from datetime import datetime
-
+from pydantic import BaseModel
 from enum import Enum
 
 
@@ -89,17 +89,32 @@ class DurationUnitChoices(Enum):
 
 
 class CustomerSchema(Schema):
-    first_name: str
-    last_name: str
-    email: str
-    phone_number: str
-    address: str
-    city: str
-    state: str
-    country: str
-    postal_code: str
-    date_created: datetime
-    last_contacted: datetime
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[str] = None
+    phone_number: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    postal_code: Optional[str] = None
+    date_created: Optional[datetime] = None
+    last_contacted: Optional[datetime] = None
+    LoyaltyThreshold_id: Optional[int] = None
+    Subscription_id: Optional[int] = None
+    Subscription_type: Optional[str] = None
+
+
+class update_loyalty(Schema):
+    customer_id:int
+    LoyaltyThreshold_id: int
+
+class update_subscription(Schema):
+    customer_id:int
+    Subscription_id: int
+    Subscription_type: str
+    
+ 
 
 class LeadSchema(Schema):
     id: int
@@ -147,7 +162,14 @@ class OrderSchema(Schema):
     loyalty_point_used: Optional[int] = None
     promotion_id: Optional[int] = None
 
-    
+class CreateOrderSchema(BaseModel):
+    participant_id: int
+    participant_type: str  # Adjust this according to your actual type
+    product_ids: List[int]
+    quantities: List[int]
+    promotion_id: Optional[int] = None
+    UseLoyalty: bool = False
+    RedeemPoints: Optional[int] = None
 
 class OrderItemSchema(Schema):
     id: int

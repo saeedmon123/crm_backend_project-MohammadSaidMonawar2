@@ -16,6 +16,34 @@ def validate_phone_number(value):
     )
     phone_regex(value)
 
+class Subscription(models.Model):
+    DURATION_UNIT_CHOICES = [
+        ("Days", "Days"),
+        ("Months", "Months"),
+        ("Years", "Years"),
+    ]
+
+    id = models.AutoField(primary_key=True)
+    types = models.JSONField(default=list[str])  # Assuming types will be stored as a JSON list
+    price = models.JSONField(default=list[int])
+    discount=models.JSONField(default=list[int])  # Assuming prices will be stored as a JSON list
+    duration = models.IntegerField(null=True)
+    duration_unit = models.CharField(max_length=20, choices=DURATION_UNIT_CHOICES,default="Months")
+
+class LoyaltyThreshold(models.Model):
+    id = models.AutoField(primary_key=True)
+    onepointforXdollar = models.IntegerField()  # Points earned per X dollars spent
+    minimum_order_amount = models.FloatField()  # Minimum order amount to earn points
+    min_points_to_redeem = models.IntegerField()  # Minimum points required to start redeeming
+    points_expiry_days = models.IntegerField()  # Number of days before points expire
+    tier_name = models.JSONField()  # List of tier names (e.g., ["Bronze", "Silver", "Gold"])
+    points_for_next_tier = models.JSONField()  # List of points required to reach each tier
+    tier_discount = models.JSONField()  # List of discount percentages for each tier
+
+    def __str__(self):
+        return f"#{self.id}{self.tier_name} Threshold"
+    
+
 class Customer(models.Model):
     id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=100)
@@ -29,7 +57,8 @@ class Customer(models.Model):
     postal_code = models.CharField(max_length=20)
     date_created = models.DateTimeField(auto_now_add=True)
     last_contacted = models.DateTimeField(null=True)
- 
+    Subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, null=True, blank=True, default=None)
+    LoyaltyThreshold = models.ForeignKey(LoyaltyThreshold, on_delete=models.CASCADE, null=True, blank=True, default=None)
 
     def __str__(self):
         return f"Customer {self.pk}"
@@ -267,19 +296,7 @@ class Feedback(models.Model):
     feedback_date = models.DateTimeField(auto_now_add=True)
 
 
-class Subscription(models.Model):
-    DURATION_UNIT_CHOICES = [
-        ("Days", "Days"),
-        ("Months", "Months"),
-        ("Years", "Years"),
-    ]
 
-    id = models.AutoField(primary_key=True)
-    types = models.JSONField(default=list[str])  # Assuming types will be stored as a JSON list
-    price = models.JSONField(default=list[int])
-    discount=models.JSONField(default=list[int])  # Assuming prices will be stored as a JSON list
-    duration = models.IntegerField(null=True)
-    duration_unit = models.CharField(max_length=20, choices=DURATION_UNIT_CHOICES,default="Months")
 
 class SubscribedCustomer(models.Model):
     SUBSCRIBED_STATUS_CHOICES= [
@@ -303,18 +320,7 @@ class SubscribedCustomer(models.Model):
 
 
 
-class LoyaltyThreshold(models.Model):
-    id = models.AutoField(primary_key=True)
-    onepointforXdollar = models.IntegerField()  # Points earned per X dollars spent
-    minimum_order_amount = models.FloatField()  # Minimum order amount to earn points
-    min_points_to_redeem = models.IntegerField()  # Minimum points required to start redeeming
-    points_expiry_days = models.IntegerField()  # Number of days before points expire
-    tier_name = models.JSONField()  # List of tier names (e.g., ["Bronze", "Silver", "Gold"])
-    points_for_next_tier = models.JSONField()  # List of points required to reach each tier
-    tier_discount = models.JSONField()  # List of discount percentages for each tier
 
-    def __str__(self):
-        return f"#{self.id}{self.tier_name} Threshold"
 
 class LoyaltyModel(models.Model):
     id = models.AutoField(primary_key=True)
@@ -362,3 +368,4 @@ class PromotionRedemption(models.Model):
     promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     redemption_date = models.DateTimeField(auto_now_add=True)
+

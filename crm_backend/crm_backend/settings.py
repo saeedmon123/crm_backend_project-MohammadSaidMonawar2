@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'crm',
     'ninja',
     'django_extensions',
-    "rest_framework"
+    'rest_framework',
+
 ]
 
 MIDDLEWARE = [

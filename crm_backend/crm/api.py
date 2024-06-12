@@ -32,7 +32,11 @@ from crm.schemas import(
     LoyaltyThresholdFilterSchema,
     LoyaltyModelFilterSchema,
     PromotionFilterSchema,
-
+)
+from crm.schemas import(
+    CreateOrderSchema,
+    update_loyalty,
+    update_subscription
 )
 from typing import List
 from django.db import models  
@@ -52,7 +56,7 @@ from django.conf import settings
 from ninja.errors import HttpError
 from ninja import Query
 logger = logging.getLogger(__name__)
-api = NinjaAPI()
+api = NinjaAPI(title="CRM_BACKEND_PROJECT")
 
 # # lsit of models
 
@@ -70,7 +74,7 @@ def get_resource(queryset, filters, sorting):
         queryset = queryset.order_by(f'{sort_order}{sort_by_field}')
     return queryset
 
-@api.get("/customers", response=List[CustomerSchema])
+@api.get("/customers", response=List[CustomerSchema],tags=["customer"])
 @paginate
 def get_customers(request, filters: CustomerFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
@@ -81,7 +85,7 @@ def get_customers(request, filters: CustomerFilterSchema = Query(...), sorting: 
     except Exception as e:
         raise HttpError(500, "Internal Server Error, please try again later")
 
-@api.get("/leads", response=List[LeadSchema])
+@api.get("/leads", response=List[LeadSchema],tags=["lead"])
 @paginate
 def get_leads(request, filters: LeadFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
@@ -92,7 +96,7 @@ def get_leads(request, filters: LeadFilterSchema = Query(...), sorting: SortingS
     except Exception as e:
         raise HttpError(500, "Internal Server Error, please try again later")
 
-@api.get("/interactions", response=List[InteractionSchema])
+@api.get("/interactions", response=List[InteractionSchema],tags=["interaction"])
 @paginate
 def get_interactions(request, filters: InteractionFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
@@ -103,7 +107,7 @@ def get_interactions(request, filters: InteractionFilterSchema = Query(...), sor
     except Exception as e:
         raise HttpError(500, "Internal Server Error, please try again later")
 
-@api.get("/products", response=List[ProductSchema])
+@api.get("/products", response=List[ProductSchema],tags=["product"])
 @paginate
 def get_products(request, filters: ProductFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
@@ -114,7 +118,7 @@ def get_products(request, filters: ProductFilterSchema = Query(...), sorting: So
     except Exception as e:
         raise HttpError(500, "Internal Server Error, please try again later")
 
-@api.get("/orders", response=List[OrderSchema])
+@api.get("/orders", response=List[OrderSchema],tags=["order"])
 @paginate
 def get_orders(request, filters: OrderFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
@@ -142,7 +146,7 @@ def get_orders(request, filters: OrderFilterSchema = Query(...), sorting: Sortin
         error_message = f"An error occurred: {str(e)}"
         raise HttpError(500, error_message)
     
-@api.get("/orderitems", response=List[OrderItemSchema])
+@api.get("/orderitems", response=List[OrderItemSchema],tags=["order"])
 @paginate
 def get_order_items(request, filters: OrderItemFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
@@ -168,7 +172,7 @@ def get_order_items(request, filters: OrderItemFilterSchema = Query(...), sortin
         error_message = f"An error occurred: {str(e)}"
         raise HttpError(500, error_message)
 
-@api.get("/payments", response=List[PaymentSchema])
+@api.get("/payments", response=List[PaymentSchema],tags=["payment"])
 @paginate
 def get_payments(request, filters: PaymentFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
@@ -194,9 +198,9 @@ def get_payments(request, filters: PaymentFilterSchema = Query(...), sorting: So
         error_message = f"An error occurred: {str(e)}"
         raise HttpError(500, error_message)
 
-@api.get("/feedbacks", response=List[FeedbackSchema])
+@api.get("/feedbacks", response=List[FeedbackSchema],tags=["order"])
 @paginate
-def get_feedbacks(request, filters: FeedbackFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
+def get_feedbacks_order(request, filters: FeedbackFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
         feedbacks = Feedback.objects.all()
         feedbacks = get_resource(feedbacks, filters, sorting)
@@ -222,7 +226,7 @@ def get_feedbacks(request, filters: FeedbackFilterSchema = Query(...), sorting: 
         error_message = f"An error occurred: {str(e)}"
         raise HttpError(500, error_message)
 
-@api.get("/subscriptions", response=List[SubscriptionSchema])
+@api.get("/subscriptions", response=List[SubscriptionSchema],tags=["subscription"])
 @paginate
 def get_subscriptions(request, filters: SubscriptionFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
@@ -233,7 +237,7 @@ def get_subscriptions(request, filters: SubscriptionFilterSchema = Query(...), s
     except Exception as e:
         raise HttpError(500, "Internal Server Error, please try again later")
 
-@api.get("/subscribedCustomers", response=List[SubscribedCustomerSchema])
+@api.get("/subscribedCustomers", response=List[SubscribedCustomerSchema],tags=["subscription"])
 @paginate
 def get_subscribed_customers(request, filters: SubscribedCustomerFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
@@ -244,7 +248,7 @@ def get_subscribed_customers(request, filters: SubscribedCustomerFilterSchema = 
     except Exception as e:
         raise HttpError(500, "Internal Server Error, please try again later")
 
-@api.get("/loyaltythresholds", response=List[LoyaltyThresholdSchema])
+@api.get("/loyaltythresholds", response=List[LoyaltyThresholdSchema],tags=["loyalty"])
 @paginate
 def get_loyalty_thresholds(request, filters: LoyaltyThresholdFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
@@ -255,7 +259,7 @@ def get_loyalty_thresholds(request, filters: LoyaltyThresholdFilterSchema = Quer
     except Exception as e:
         raise HttpError(500, "Internal Server Error, please try again later")
 
-@api.get("/loyaltymodels", response=List[LoyaltyModelSchema])
+@api.get("/loyaltymodels", response=List[LoyaltyModelSchema],tags=["loyalty"])
 @paginate
 def get_loyalty_models(request, filters: LoyaltyModelFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
@@ -266,7 +270,8 @@ def get_loyalty_models(request, filters: LoyaltyModelFilterSchema = Query(...), 
     except Exception as e:
         raise HttpError(500, "Internal Server Error, please try again later")
 
-@api.get("/promotions", response=List[PromotionSchema])
+
+@api.get("/promotions", response=List[PromotionSchema],tags=["promotion"])
 @paginate
 def get_promotions(request, filters: PromotionFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
@@ -277,7 +282,7 @@ def get_promotions(request, filters: PromotionFilterSchema = Query(...), sorting
     except Exception as e:
         raise HttpError(500, "Internal Server Error, please try again later")
 
-@api.get("/promotionredemptions", response=List[PromotionRedemptionSchema])
+@api.get("/promotionredemptions", response=List[PromotionRedemptionSchema],tags=["promotion"])
 @paginate
 def get_promotion_redemptions(request, filters: PromotionRedemptionFilterSchema = Query(...), sorting: SortingSchema = Query(...)):
     try:
@@ -290,7 +295,7 @@ def get_promotion_redemptions(request, filters: PromotionRedemptionFilterSchema 
 
 
 
-@api.get('/interactions')
+@api.get('/get_interactions_by_id',tags=["interaction"])
 def IdInteraction(request, participant_id: int, participant_type: ParticipantTypeChoices):
     try:
         # Get the ContentType object for the provided participant type
@@ -326,7 +331,7 @@ def IdInteraction(request, participant_id: int, participant_type: ParticipantTyp
     except ContentType.DoesNotExist:
         return JsonResponse({'error': f'Invalid participant type: {participant_type.value}'}, status=400)
 
-@api.get('/customerprofiles')
+@api.get('/customerprofiles',tags=["customer"])
 def get_customer_profiles(request, customer_id: int):
     try:
         # Retrieve customer details
@@ -392,7 +397,7 @@ def get_customer_profiles(request, customer_id: int):
 
 
 
-@api.get('/activesubscriptions/')
+@api.get('/activesubscriptions/',tags=["subscription"])
 def get_active_subscriptions(request):
     try:
         active_subscriptions = SubscribedCustomer.objects.filter(status='Active')
@@ -403,7 +408,7 @@ def get_active_subscriptions(request):
 
 
 
-@api.get("/interaction-analysis/")
+@api.get("/interaction-analysis/",tags=["interaction"])
 def interaction_analysis(request):
     try:
         # Example: Count interactions by type
@@ -426,34 +431,150 @@ def interaction_analysis(request):
 
 #-----------------------------------------------
 #creation:
-
-@api.post("/customers/")
-def create_customer(request, data: CustomerSchema):
+@api.patch("/customers/{customer_id}/loyalty", tags=["customer"])
+def update_customer_loyalty(request, data: update_loyalty):
+    '''  update the customer loyalty based on the customer_id  '''
     try:
-        # Create a new customer using the validated data
-        customer = Customer.objects.create(**data.dict())
-        return JsonResponse({'message': 'Customer created successfully', 'customer_id': customer.id}, status=201)
+        # Retrieve the existing customer object
+        customer = Customer.objects.get(pk=data.customer_id)
+
+        if data.LoyaltyThreshold_id != 0 and customer.LoyaltyThreshold is None:
+            loyalty_model_info = create_loyalty_model(data.LoyaltyThreshold_id, customer.id)
+            if 'error' in loyalty_model_info:
+                return JsonResponse(loyalty_model_info, status=loyalty_model_info['status'])
+            
+            customer.LoyaltyThreshold = LoyaltyThreshold.objects.get(pk=data.LoyaltyThreshold_id)
+            customer.save()
+
+        elif data.LoyaltyThreshold_id != 0 and customer.LoyaltyThreshold is not None:
+            loyalty_model=LoyaltyModel.objects.get(customer = customer)
+            loyalty_model.delete()
+            customer.save()
+            loyalty_model_info = create_loyalty_model(data.LoyaltyThreshold_id, customer.id)
+            if 'error' in loyalty_model_info:
+                return JsonResponse(loyalty_model_info, status=loyalty_model_info['status'])
+
+            customer.LoyaltyThreshold = LoyaltyThreshold.objects.get(pk=data.LoyaltyThreshold_id)
+            customer.save()
+
+        # Save the updated customer object
+        customer.save()
+
+        return JsonResponse({'message': 'Customer loyalty updated successfully', 'customer_id': customer.id}, status=200)
+    except Customer.DoesNotExist:
+        return JsonResponse({'error': 'Customer not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
 
-@api.post("/orders/")
-def create_order(request, participant_id: int, participant_type: ParticipantTypeChoices, product_ids: list[int], quantities: list[int], promotion_id: int = None,UseLoyalty:bool = False,RedeemPoints:int=None):
+@api.patch("/customers/{customer_id}/subscription", tags=["customer"])
+def update_customer_subscription(request, data: update_subscription):
+    '''  update the customer subscription based on the customer_id  '''
     try:
+        # Retrieve the existing customer object
+        customer = Customer.objects.get(pk=data.customer_id)
+
+        # Handle Subscription
+        if data.Subscription_id != 0:
+            if data.Subscription_type == "string":
+                return JsonResponse({"error": "please check that you put suitable subscription id as well"}, status=404)
+            subscription_info = create_customer_subscription(customer.id, data.Subscription_id, data.Subscription_type)
+            if 'error' in subscription_info:
+                return JsonResponse(subscription_info, status=subscription_info['status'])
+            customer.Subscription = Subscription.objects.get(pk=data.Subscription_id)
+        else:
+            if customer.Subscription is not None:
+                subscribed_customer = SubscribedCustomer.objects.get(customer=customer)
+                subscribed_customer.delete()
+
+        # Save the updated customer object
+        customer.save()
+
+        return JsonResponse({'message': 'Customer subscription updated successfully', 'customer_id': customer.id}, status=200)
+    except Customer.DoesNotExist:
+        return JsonResponse({'error': 'Customer not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+
+@api.post("/customers/", tags=["customer"])
+def create_customer(request, data: CustomerSchema):
+    "creation of customer: can create without loyalty and subscription"
+    try:
+        # Extract the data dictionary from the schema
+        customer_data = data.dict()
+
+        # Check and replace 0 values with None for foreign key fields
+        if customer_data['LoyaltyThreshold_id'] == 0:
+            customer_data['LoyaltyThreshold_id'] = None
+        if customer_data['Subscription_id'] == 0:
+            customer_data['Subscription_id'] = None
+        if customer_data['Subscription_type'] == "string":
+            customer_data['Subscription_type'] = None
+        if customer_data['Subscription_id'] is None and customer_data['Subscription_type'] is not None:
+            return JsonResponse({'error': 'Both Subscription ID and subscription type must be provided or both must be None'}, status=400)
+        
+        subscription_type = customer_data.pop('Subscription_type', None)
+ 
+        # Create a new customer using the validated data
+        customer = Customer.objects.create(**customer_data)
+        
+        # Create loyalty model if LoyaltyThreshold_id is provided
+        if customer_data['LoyaltyThreshold_id'] is not None:
+            loyalty_model_info = create_loyalty_model(data.LoyaltyThreshold_id, customer.id)
+            if 'error' in loyalty_model_info:
+                # Delete the customer if an error occurs
+                customer.delete()
+                return JsonResponse(loyalty_model_info, status=loyalty_model_info['status'])
+            
+        if customer_data['Subscription_id'] is not None:
+            if subscription_type is None:
+                # Delete the customer if subscription type is not found
+                customer.delete()
+                return JsonResponse({'error': 'subscription type not found'}, status=404)
+          
+            subscription_info = create_customer_subscription(customer.id,data.Subscription_id,subscription_type)
+            if 'error' in subscription_info:
+                # Delete the customer if an error occurs
+                customer.delete()
+                return JsonResponse(subscription_info, status=subscription_info['status'])
+
+        return JsonResponse({'message': 'Customer created successfully', 'customer_id': customer.id}, status=201)
+    except Exception as e:
+       customer.delete()
+       return JsonResponse({'error': str(e)}, status=500)
+    
+
+@api.post("/orders/", tags=["order"])
+def create_order(request, payload: CreateOrderSchema):
+    ''' creat_order: if lead create the order the lead status become converted and all his data turn to customer with no subscription and no loyalty'''
+    try:
+        # Extract data from the payload
+        participant_id = payload.participant_id
+        participant_type = payload.participant_type
+        product_ids = payload.product_ids
+        quantities = payload.quantities
+        promotion_id = payload.promotion_id
+        UseLoyalty = payload.UseLoyalty
+        RedeemPoints = payload.RedeemPoints
+
+        
 
         # Check product availability before starting the transaction
         for product_id, quantity in zip(product_ids, quantities):
             product = Product.objects.filter(id=product_id).first()
+            if quantity == 0:
+                return JsonResponse({'error': f"can't order product witht 0 quantity"}, status=404)
             if not product:
                 return JsonResponse({'error': f'Product with ID {product_id} not found'}, status=404)
             if product.quantity_available < quantity:
                 return JsonResponse({'error': f'The product {product.id} with the name {product.name} currently has only {product.quantity_available} units available in stock.'}, status=404)
-            
-        with transaction.atomic():
 
-            if UseLoyalty == False and RedeemPoints != None:
+        with transaction.atomic():
+            if UseLoyalty == False and RedeemPoints != 0:
                 return JsonResponse({'message': 'Cannot redeem points without using loyalty.'}, status=400)
-            
+
             # Check if the provided promotion exists
             promotion = None
             if promotion_id:
@@ -477,8 +598,12 @@ def create_order(request, participant_id: int, participant_type: ParticipantType
                         city=lead.city,
                         state=lead.state,
                         country=lead.country,
-                        postal_code=lead.postal_code
+                        postal_code=lead.postal_code,
+                        Subscription=None,
+                        LoyaltyThreshold=None
                     )
+                    customer.date_created = timezone.now()
+                    customer.last_contacted = timezone.now()
                     lead.status = "Converted"
                     lead.save()
                 else:
@@ -488,8 +613,6 @@ def create_order(request, participant_id: int, participant_type: ParticipantType
                 customer = Customer.objects.filter(id=participant_id).first()
                 if not customer:
                     return JsonResponse({'error': 'Customer not found'}, status=404)
-
-      
 
             # Create a dictionary
             order_message_dict = {"key": "value"}
@@ -507,6 +630,7 @@ def create_order(request, participant_id: int, participant_type: ParticipantType
                 loyalty_point_used=RedeemPoints,
                 status="UnPaid"
             )
+
             # Initialize total_amount and discount_amount
             total_amount = 0
             discount_amount = 0
@@ -532,7 +656,7 @@ def create_order(request, participant_id: int, participant_type: ParticipantType
                 )
 
             # Calculate total amount after discounts
-            original_amount=total_amount
+            original_amount = total_amount
             total_amount -= discount_amount
 
             # Apply subscription discount if applicable
@@ -547,11 +671,12 @@ def create_order(request, participant_id: int, participant_type: ParticipantType
             order.total_amount = total_amount
             order.save()
 
-            if UseLoyalty == True:
-                loyaltymodel = get_object_or_404(LoyaltyModel,customer=customer)
+            if UseLoyalty:
+                loyaltymodel = get_object_or_404(LoyaltyModel, customer=customer)
                 if loyaltymodel.loyaltyThreshold.minimum_order_amount > total_amount:
-                    return JsonResponse({"message",f"you don't reach the minimum order amount to use loyal points the minimum order points is {loyaltymodel.loyaltyThreshold.minimum_order_amount}"})
-          # Return response
+                    return JsonResponse({"message": f"you don't reach the minimum order amount to use loyal points the minimum order points is {loyaltymodel.loyaltyThreshold.minimum_order_amount}"})
+
+            # Return response
             response_data = {'message': 'Order created successfully', 'original_amount': original_amount}
             if promotion_id and not subscribed_customer:
                 response_data['after_promotion'] = total_amount
@@ -560,21 +685,15 @@ def create_order(request, participant_id: int, participant_type: ParticipantType
             elif subscribed_customer and promotion_id:
                 response_data['after_promotion_and_subscription_discount'] = total_amount
 
-
-            if UseLoyalty == True:
+            if UseLoyalty:
                 loyaltymodel = get_object_or_404(LoyaltyModel, customer=customer)
 
                 min_point_to_redeem = loyaltymodel.loyaltyThreshold.min_points_to_redeem
                 # Check if the points to redeem are valid
                 if RedeemPoints >= min_point_to_redeem:
-                    total_amount=  redeem_points(loyaltymodel.id, RedeemPoints, total_amount)
-
-                    
+                    total_amount = redeem_points(loyaltymodel.id, RedeemPoints, total_amount)
                 else:
-                    return JsonResponse({"message":f"you don't reach the minimum point to redeem {min_point_to_redeem}"})
-
-
-              
+                    return JsonResponse({"message": f"you don't reach the minimum point to redeem {min_point_to_redeem}"})
 
                 # Update the total amount in the order
                 order.total_amount = total_amount
@@ -582,18 +701,27 @@ def create_order(request, participant_id: int, participant_type: ParticipantType
 
                 # Include the total amount after loyalty in the response data
                 response_data['after_loyalty'] = total_amount
-                        
 
-            order.order_message=response_data
+            order.order_message = response_data
             order.save()
             return JsonResponse(response_data)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
 
-
-@api.post('/loyaltythresholds/')
+@api.post('/loyaltythresholds/',tags=["loyalty"])
 def create_loyalty_threshold(request, payload: LoyaltyThresholdSchema):
+    '''Creates roles for loyalty program.
+
+    Attributes:
+        onepointforXdollar (int): Determines points earned per dollar spent.
+        minimum_order_amount (float): Sets minimum spend to earn points.
+        min_points_to_redeem (int): Minimum points required for redemption.
+        points_expiry_days (int): Points expiration period in days.
+        tier_name (list): Names of loyalty tiers.
+        points_for_next_tier (list): Points needed for next loyalty tier.
+        tier_discount (list): Discount percentage for each loyalty tier.
+    '''
     try:
         # Create LoyaltyThreshold
         loyalty_threshold = LoyaltyThreshold.objects.create(
@@ -611,17 +739,12 @@ def create_loyalty_threshold(request, payload: LoyaltyThresholdSchema):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
-@api.post('/loyaltymodels/')
-def create_loyalty_model(request, loyalty_threshold_id: int, customer_id: int):
+
+def create_loyalty_model(loyalty_threshold_id: int, customer_id: int):
     try:
         # Fetch the LoyaltyThreshold and Customer instances
         loyalty_threshold = get_object_or_404(LoyaltyThreshold, id=loyalty_threshold_id)
         customer = get_object_or_404(Customer, id=customer_id)
-
-        # Check if the customer already has a LoyaltyModel
-        existing_loyalty_model = LoyaltyModel.objects.filter(customer=customer).exists()
-        if existing_loyalty_model:
-            return JsonResponse({"message": "The customer already has a loyalty model"}, status=400)
 
         # Create LoyaltyModel
         loyalty_model = LoyaltyModel.objects.create(
@@ -634,16 +757,14 @@ def create_loyalty_model(request, loyalty_threshold_id: int, customer_id: int):
         return {'message': 'LoyaltyModel created successfully', 'id': loyalty_model.id}
     
     except LoyaltyThreshold.DoesNotExist:
-        return JsonResponse({"error": "LoyaltyThreshold not found"}, status=404)
+        return {"error": "LoyaltyThreshold not found", 'status': 404}
     
     except Customer.DoesNotExist:
-        return JsonResponse({"error": "Customer not found"}, status=404)
-    
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return {"error": "Customer not found", 'status': 404}
 
-@api.post('/payments/')
+@api.post('/payments/',tags=["payment"])
 def create_payment(request, order_id: int, payment_method: PaymentMethodChoices):
+    ''' create payment of the order created '''
     try:
         with transaction.atomic():
             order = get_object_or_404(Order, id=order_id)
@@ -712,8 +833,9 @@ def create_payment(request, order_id: int, payment_method: PaymentMethodChoices)
         return JsonResponse({'error': str(e)}, status=500)
 
 
-@api.post('/interactions/')
+@api.post('/interactions/',tags=["interaction"])
 def create_interaction(request, participant_type: ParticipantTypeChoices, participant_id: int, interaction_type: InteractionTypeChoices, interaction_details: str, outcome: str, responsible_user: str):
+    ''' create the interaction if lead make interaction-> lead.status = contacted and if customer update last_contacted'''
     participant_type_str = participant_type.value
     participant_model = None
     if participant_type_str == 'Lead':
@@ -768,8 +890,9 @@ def create_interaction(request, participant_type: ParticipantTypeChoices, partic
     except Exception as e:
         return JsonResponse({'message': str(e)}, status=400)
 
-@api.post('/followup/')
+@api.post('/followup/',tags=["interaction"])
 def need_followup(request, interaction_id: int, follow_up_date: datetime, follow_up_note: str):
+    ''' if the interaction need follow up '''
     try:
         interaction = get_object_or_404(Interaction, id=interaction_id)
         interaction.schedule_follow_up(follow_up_date, follow_up_note)
@@ -777,8 +900,9 @@ def need_followup(request, interaction_id: int, follow_up_date: datetime, follow
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-@api.post('/clearfollowup')
+@api.delete('/clearfollowup',tags=["interaction"])
 def clear_followup(request, interaction_id: int):
+    ''' delete the follow up when it's done '''
     try:
         interaction = get_object_or_404(Interaction, id=interaction_id)
         interaction.clear_follow_up()
@@ -786,8 +910,9 @@ def clear_followup(request, interaction_id: int):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-@api.post('/promotions/')
+@api.post('/promotions/',tags=["promotion"])
 def create_promotion(request, name: str, description: str, type: PromotionTypeChoices, start_date: datetime, end_date: datetime, discount_type: DiscountTypeChoices, discount_value: float, usage_limits: int, category: CategoryChoices):
+    ''' create promtion to give discount for each product the customer pay based on it's category '''
     try:
         promotion = Promotion.objects.create(
             name=name,
@@ -807,10 +932,21 @@ def create_promotion(request, name: str, description: str, type: PromotionTypeCh
 
 
 
-
-
-@api.post('/subscriptions/')
+@api.post('/subscriptions/',tags=["subscription"])
 def create_subscription(request,types:list[str],prices:list[int],discounts:list[int],duration:int,duration_unit:DurationUnitChoices):
+    '''Create a subscription.
+
+    Args:
+        types (list[str]): List of subscription types.
+        prices (list[int]): List of prices corresponding to each subscription type.
+        discounts (list[int]): List of discounts corresponding to each subscription type.
+        duration (int): Duration of the subscription.
+        duration_unit (DurationUnitChoices): Unit of the subscription duration (e.g., days, months).
+
+    Explanation:
+        - `types`, `prices`, and `discounts` are parallel lists where each type is followed by its price and discount.
+        - The discount is deducted from the total amount of the order.
+    '''
     try:
         Subscription.objects.create(
             types=types,
@@ -825,13 +961,22 @@ def create_subscription(request,types:list[str],prices:list[int],discounts:list[
 
 
 
+def create_customer_subscription(customer_id:int,subscription_id:int,subscription_type:str):
+    '''Subscribe a customer to a specific subscription.
 
+    Args:
+        customer_id (int): The ID of the customer to subscribe.
+        subscription_id (int): The ID of the subscription to subscribe the customer to.
+        subscription_type (str): The type of subscription to subscribe the customer to.
 
-
-
-@api.post('/subscribedCustomers/')
-def create_customer_subscription(request,customer_id:int,subscription_id:int,subscription_type:str):
+    Explanation:
+        - The subscription type must be one of the types associated with the given subscription ID.
+        - Checks if the customer is already subscribed to the subscription. If yes, returns an error.
+        - Calculates the end date of the subscription based on the subscription's duration and duration unit.
+        - Creates a new subscription record for the customer with the specified details.
+    '''
     try:
+        
         try:
             customer = get_object_or_404(Customer,id=customer_id)
         except Customer.DoesNotExist:
@@ -843,8 +988,8 @@ def create_customer_subscription(request,customer_id:int,subscription_id:int,sub
             return JsonResponse({'error': 'Subscription not found'}, status=404)
 
         if subscription_type not in subscription.types:
-            return JsonResponse({'error': f'the subscription type you inserted is not existed in the types of the subscription of id {subscription_id}'})
-            
+            return JsonResponse({'error': f'the subscription type you inserted is not existed in the types of the subscription of id {subscription_id}'}, status=404)
+   
         # Check if the customer is already subscribed to this subscription
         existing_subscription = SubscribedCustomer.objects.filter(customer=customer, subscription=subscription, subscription_type=subscription_type, status="Active").exists()
         if existing_subscription:
@@ -858,7 +1003,7 @@ def create_customer_subscription(request,customer_id:int,subscription_id:int,sub
             end_date = timezone.now() + timedelta(days=365 * subscription.duration)
         else:
             return JsonResponse({'error': 'Invalid duration unit for subscription'}, status=400)
-
+       
         SubscribedCustomer.objects.create(
             customer = customer,
             subscription=subscription,
@@ -867,6 +1012,7 @@ def create_customer_subscription(request,customer_id:int,subscription_id:int,sub
             end_date=end_date,
             status="Active"
         )
+
         return JsonResponse({'message': 'customer subscribed  successfully'})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
@@ -874,8 +1020,22 @@ def create_customer_subscription(request,customer_id:int,subscription_id:int,sub
 
     
 
-@api.post('/feedbacks/')
-def create_feedback(request, customer_id: int, order_id: int, rating: int, review: str):
+@api.post('/feedbacks/',tags=["order"])
+def create_feedback_order(request, customer_id: int, order_id: int, rating: int, review: str):
+    '''Create feedback for a paid order.
+
+    Args:
+        customer_id (int): The ID of the customer providing the feedback.
+        order_id (int): The ID of the order to provide feedback for.
+        rating (int): The rating given for the order (should be between 1 and 5).
+        review (str): The review or comment provided for the order.
+
+    Explanation:
+        - Validates if the rating provided is between 1 and 5.
+        - Retrieves the customer and order objects based on the provided IDs.
+        - Verifies if the order belongs to the customer.
+        - Creates a new feedback object for the order with the provided rating and review.
+    '''
     # Validation: Check if rating is between 1 and 5
     if not 1 <= rating <= 5:
         return JsonResponse({'error': 'Rating should be between 1 and 5'}, status=400)
@@ -908,6 +1068,16 @@ def create_feedback(request, customer_id: int, order_id: int, rating: int, revie
 
 @api.post('/profiles')
 def create_profile(request,    username: str,role: RoleChoices):
+    '''Create a profile and assign a role to a Django built-in user.
+
+    Args:
+        username (str): The username of the Django built-in user.
+        role (RoleChoices): The role to assign to the user.
+
+    Explanation:
+        - Retrieves the Django built-in user instance based on the provided username.
+        - Creates a new profile instance for the user with the specified role.
+    '''
     try:
         # Get the admin User instance
         admin_user = get_object_or_404(User,username=username)
@@ -925,8 +1095,19 @@ def create_profile(request,    username: str,role: RoleChoices):
 
 #update
 
-@api.patch('/renewals/')
+@api.patch('/renewals/',tags=["subscription"])
 def renew_subscription(request, customer_id: int, subscription_id: int):
+    '''Reactivate a subscription if it's deactivated.
+
+    Args:
+        customer_id (int): The ID of the customer whose subscription needs to be renewed.
+        subscription_id (int): The ID of the subscription to be renewed.
+
+    Explanation:
+        - Retrieves the customer and subscription instances based on the provided IDs.
+        - Checks if the customer is subscribed to the subscription.
+        - Updates the subscription status to "Active" and recalculates the subscription end date.
+    '''
     try:
         try:
             customer = Customer.objects.get(id=customer_id)
@@ -969,8 +1150,15 @@ def renew_subscription(request, customer_id: int, subscription_id: int):
            
 @api.get("/adjust-pricing/")
 def adjust_pricing(request,lt_quantity:int,increased_percnetage:float):
-    '''
-    increase percentage in decimal (e.g : 0.1 increased the price 10% )
+    '''Adjust pricing based on quantity of products.
+
+    Args:
+        lt_quantity (int): The threshold quantity. If the quantity of any product is less than this threshold, its price will be adjusted.
+        increased_percentage (float): The percentage increase in price as a decimal (e.g., 0.1 for 10% increase).
+
+    Explanation:
+        - Checks if the quantity of any product is less than the threshold quantity.
+        - If so, increases the price of the product by the specified percentage.
     '''
     response_data = {'message': 'product updated successfully'}
 
@@ -990,8 +1178,23 @@ from sklearn.metrics.pairwise import cosine_similarity
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
-@api.get("/recommend-products")
+@api.get("/recommend-products",tags=["customer"])
 def recommend_products(request, customer_id: int):
+    '''Recommend products to a customer based on their past purchases.
+
+    Args:
+        customer_id (int): The ID of the customer for whom product recommendations are generated.
+
+    Returns:
+        A JSON response containing a list of recommended products.
+
+    Explanation:
+        - Retrieve the customer's past orders.
+        - Extract product IDs from the order items of the customer's past orders.
+        - Generate recommendations based on the customer's past purchases.
+        - Construct a list of dictionaries containing recommended product information (ID and name).
+        - Return the list of recommended products in a JSON response.
+    '''
     customer = get_object_or_404(Customer, id=customer_id)
     customer_orders = Order.objects.filter(customer=customer)
     product_ids = OrderItem.objects.filter(order__in=customer_orders).values_list('product', flat=True)
@@ -1015,6 +1218,11 @@ def recommend_products(request, customer_id: int):
     return JsonResponse({"Recommendations": recommended_products})
 
 def get_all_product_vectors():
+    '''Get vectors for all products.
+
+    Returns:
+        A dictionary where keys are product IDs and values are product vectors containing product information.
+    '''
     products = Product.objects.all()
     product_vectors = {}
     
@@ -1034,6 +1242,21 @@ def get_all_product_vectors():
     return product_vectors
 
 def generate_recommendations(product_vectors, purchased_product_ids):
+    '''Generate product recommendations based on past purchases.
+
+    Args:
+        product_vectors (dict): Dictionary containing vectors for all products.
+        purchased_product_ids (list): List of product IDs purchased by the customer.
+
+    Returns:
+        A list of recommended product IDs.
+
+    Explanation:
+        - Extract features for vectorization (category and description).
+        - Combine all features into a single feature vector for each product.
+        - Calculate similarity scores between products.
+        - Generate recommendations based on similarity scores, excluding already purchased products.
+    '''
     product_data = list(product_vectors.values())
     
     # Extract features for vectorization
@@ -1075,6 +1298,15 @@ def generate_recommendations(product_vectors, purchased_product_ids):
     return [rec[0] for rec in unique_recommendations[:10]]
 
 def calculate_similarity(vector1, vectors):
+    '''Calculate cosine similarity between two vectors.
+
+    Args:
+        vector1 (list): Feature vector of a product.
+        vectors (dict): Dictionary containing feature vectors of products.
+
+    Returns:
+        Dictionary containing similarity scores between the given vector and all other vectors.
+    '''
     similarities = cosine_similarity([vector1], list(vectors.values()))
     similarity_scores = {id: score for id, score in zip(vectors.keys(), similarities[0])}
     return similarity_scores
@@ -1087,7 +1319,21 @@ from django.db.models import Sum
 from django.core.exceptions import ValidationError
 @api.get("/sales_forecase")
 def sales_forecast(request,category:CategoryChoices):
+    '''Generate sales forecast for a specific product category.
 
+    Args:
+        category (CategoryChoices): The category for which sales forecast is generated.
+
+    Returns:
+        A JSON response containing the forecasted sales data.
+
+    Explanation:
+        - Retrieve historical sales data for the specified category.
+        - Calculate total sales for each date in the historical data.
+        - Fit an ARIMA model to the historical sales data.
+        - Generate sales forecast for the next 30 days.
+        - Return the forecasted sales data in a JSON response.
+    '''
     try:
             historical_sales = Order.objects.filter(
             order_date__lt=timezone.now(),
